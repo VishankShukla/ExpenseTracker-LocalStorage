@@ -15,13 +15,44 @@ document.addEventListener('DOMContentLoaded',() => {
         const amount = parseFloat(expenseAmountInput.value.trim());
 
         if( name !== "" && !isNaN(amount) && amount >0){
-            
+            const newExpense ={
+                id: Date.now(),
+                name: name,
+                amount: amount
+            }
+            expenses.push(newExpense);
+            saveExpensesToLocal();
+            renderExpenses();
+            updateTotal();
+            // clear Input
+            expenseNameInput.value ="";
+            expenseAmountInput.value =""; 
         }
-    })
+    });
+
+    function renderExpenses(){
+        expenseList.innerHTML = ""
+        expenses.forEach(expense => {
+            const li = document.createElement("li");
+            li.innerHTML=`
+            ${expense.name} - ₹${expense.amount}
+            <button data-id="${expense.id}">Delete</button>`;
+        })
+    }
+
+    function saveExpensesToLocal(){
+        localStorage.setItem("expenses",JSON.stringify(expenses));
+
+    }
 
 
     function calculateTotal(){
+        return expenses.reduce((sum,expense) => sum + expense.amount,0)
+    }
 
+    function updateTotal(){
+        totalAmount = calculateTotal();
+        totalAmountDisplay.textContent = totalAmount.toFixed(2);
     }
 
 })
