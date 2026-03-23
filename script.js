@@ -6,10 +6,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const expenseList = document.getElementById("expense-list");
   const totalAmountDisplay = document.getElementById("total-amount");
   const expenseDateInput = document.getElementById("expense-date");
+  const downloadBtn = document.getElementById("download-pdf");
+
+  downloadBtn.addEventListener("click", generatePDF);
 
   let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
   let totalAmount = calculateTotal();
   renderExpenses();
+  updateTotal();
 
   expenseForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -40,9 +44,13 @@ document.addEventListener("DOMContentLoaded", () => {
     expenses.forEach((expense) => {
       const li = document.createElement("li");
       li.innerHTML = `
-            ${expense.name} - ₹${expense.amount} <br>
-            <small>${expense.date}</small>
-            <button data-id="${expense.id}">Delete</button>`;
+  <div class="expense-top">
+    <span>${expense.name}</span>
+    <span>₹${expense.amount}</span>
+  </div>
+  <div class="expense-date">${expense.date}</div>
+  <button data-id="${expense.id}">Delete</button>
+`;
 
       expenseList.appendChild(li);
     });
@@ -70,4 +78,33 @@ document.addEventListener("DOMContentLoaded", () => {
       updateTotal();
     }
   });
+
+  function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text("Expense Report", 20, 20);
+
+    let y = 30;
+
+    expenses.forEach((expense, index) => {
+      const text =
+        index +
+        1 +
+        ". " +
+        expense.name +
+        " - Rs " +
+        expense.amount +
+        " (" +
+        (expense.date || "No Date") +
+        ")";
+      doc.text(text, 20, y);
+      y += 10;
+    });
+
+    doc.text("Total: Rs " + totalAmount.toFixed(2), 20, y + 10);
+
+    doc.save("expenses.pdf");
+  }
 });
